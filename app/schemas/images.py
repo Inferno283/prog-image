@@ -5,4 +5,5 @@ class StoreImageResponse(BaseModel):
     id: str
 
 class RetrieveImageResponse(BaseModel):
-    id: str
+    content: bytes
+    media_type: str

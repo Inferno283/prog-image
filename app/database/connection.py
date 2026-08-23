@@ -5,7 +5,6 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
 
-
 engine = create_engine(
     settings.database_url,
 )
@@ -15,6 +14,7 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
 
 
 class Base(DeclarativeBase):
