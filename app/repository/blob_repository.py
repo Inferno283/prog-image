@@ -9,12 +9,12 @@ class BlobRepository(Repository):
         self.client = client
         self.storage_provider_type = storage_provider
 
-    def store(self, bucket_name: str, image_to_store: bytes, image_metadata: ImageMetadata, key: UUID):
+    def store(self, bucket_name: str, file_to_store: bytes, image_metadata: ImageMetadata, key: UUID):
         self.client.put_object(
             Bucket=bucket_name,
             Key=str(key),
-            Body=image_to_store,
-            ContentType=image_metadata.content_type
+            Body=file_to_store,
+            ContentType=image_metadata.content_type # TODO Remove this, make this repo reusable
         )
         return key
 

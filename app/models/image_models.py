@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import BigInteger, String, Integer
+from sqlalchemy import BigInteger, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -30,7 +30,7 @@ class StoredImageMetadata(Base):
         nullable=False,
     )
     
-    filename: Mapped[str | None] = mapped_column(
+    filename: Mapped[str] = mapped_column(
         String,
         nullable=True,
     )

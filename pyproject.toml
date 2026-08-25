@@ -5,7 +5,7 @@ description = "Image Storage and Retrieval"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "boto3>=1.43.79",
+    "boto3",
     "fastapi>=0.141.1",
     "pillow>=12.3.0",
     "psycopg[binary]>=3.3.4",

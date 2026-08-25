@@ -7,7 +7,7 @@ from app.repository.repository_protocol import Repository
 from app.schemas.images import ImageMetadata
 
 
-class StoredImageMetadataRepository(Repository):
+class ImageMetadataRepository(Repository):
     
     def __init__(self, db: Session):
         self.db = db

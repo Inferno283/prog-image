@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     s3_region: str
     s3_bucket: str
 
+    max_image_size_mb: int
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -17,4 +18,4 @@ class Settings(BaseSettings):
     )
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]  # pyright: ignore[reportCallIssue]

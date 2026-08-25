@@ -8,11 +8,11 @@ from PIL import Image
 from app.blob.s3_connection import client
 from app.core.config import settings
 from app.database.connection import SessionLocal
-from app.repository.image_repository import StoredImageMetadataRepository
-from app.repository.s3_blob_repository import BlobRepository
+from app.repository.image_metadata_repository import ImageMetadataRepository
+from app.repository.blob_repository import BlobRepository
 from app.schemas.images import ImageMetadata, RetrievedImage
 
-default_image_repo = StoredImageMetadataRepository(SessionLocal())
+default_image_repo = ImageMetadataRepository(SessionLocal())
 default_blob_repo = BlobRepository(client, "s3")
 
 MAX_IMAGE_SIZE_IN_MB = 10
@@ -30,7 +30,7 @@ IMAGE_MIME_TYPES = {
 class ImageService:
     def __init__(
         self,
-        image_repo: StoredImageMetadataRepository = default_image_repo,
+        image_repo: ImageMetadataRepository = default_image_repo,
         blob_repo: BlobRepository = default_blob_repo,
     ):
         self.image_storage_metadata_repo = image_repo
@@ -43,7 +43,7 @@ class ImageService:
 
         self.blob_repo.store(
             bucket_name=settings.s3_bucket,
-            image_to_store=image_data,
+            file_to_store=image_data,
             image_metadata=image_metadata,
             key=image_uuid,
         )
@@ -65,8 +65,8 @@ class ImageService:
         if not image_data:
             raise ValueError("Image is empty")
 
-        if len(image_data) > (MAX_IMAGE_SIZE_IN_MB*(1024**2)):
-            raise ValueError(f"Image exceeds maximum size of {MAX_IMAGE_SIZE_IN_MB} MB")
+        if len(image_data) > (settings.max_image_size_mb*(1024**2)):
+            raise ValueError(f"Image exceeds maximum size of {settings.max_image_size_mb} MB")
 
         with Image.open(BytesIO(image_data)) as pil_image:
             pil_image.load()
