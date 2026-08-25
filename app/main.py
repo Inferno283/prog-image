@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.routes.image_router import router as images_router
-from app.storage_connections.db_connection import Base, engine
+from app.connections.db_connection import Base, engine
 
 
 @asynccontextmanager

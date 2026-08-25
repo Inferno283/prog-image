@@ -1,3 +1,4 @@
+import logging
 import uuid
 from io import BytesIO
 from uuid import UUID
@@ -9,6 +10,7 @@ from PIL import Image, UnidentifiedImageError
 from app.core.config import settings
 from app.schemas.images import ImageMetadata, RetrievedImage
 
+logger = logging.getLogger("prog-image")
 MAX_IMAGE_SIZE_IN_MB = 10
 
 
@@ -25,7 +27,12 @@ IMAGE_MIME_TYPES = {
 class InvalidImageError(Exception):
     pass
 
+
 class InvalidStorageStateError(Exception):
+    pass
+
+
+class ImageNotFoundError(Exception):
     pass
 
 
@@ -46,23 +53,27 @@ class ImageService:
             key=image_uuid,
         )
         try:
-            # IF THIS FAILS, DELETE BLOB FILE TO ENSURE CONSISTENCY
             await self.image_metadata_repo.store(
                 blob_storage_provider=self.blob_repo.storage_provider,
                 blob_key=image_uuid,
                 image_metadata=image_metadata,
             )
+            return image_uuid
         except Exception:
             try:
                 await self.blob_repo.delete(
                     bucket_name=settings.s3_bucket,
                     key=image_uuid,
                 )
-            except Exception:
-                # Log this loudly: orphaned blob requires reconciliation.
+            except Exception as exc:
+                logger.exception(
+                    "Failed to clean up orphaned blob %s",
+                    image_uuid,
+                    exc_info=exc,
+                )
+                # Orphaned image requires manual deletion to avoid being orphaned.
                 raise
             raise
-        return image_uuid
 
     def get_image_metadata(self, image: UploadFile, image_data: bytes) -> ImageMetadata:
         if not image_data:
@@ -98,18 +109,19 @@ class ImageService:
 
     async def retrieve(self, image_uuid: UUID):
         metadata = await self.image_metadata_repo.retrieve(image_uuid)
-        try:    
+        if metadata is None:
+            raise ImageNotFoundError(f"Image not found {image_uuid}")
+        try:
             image = await self.blob_repo.retrieve(
                 bucket_name=settings.s3_bucket, key=image_uuid
             )
         except ClientError as exc:
-            if exc.response["Error"]["Code"] in ("NoSuchKey", "404", "NotFound"):    
+            if exc.response["Error"]["Code"] in ("NoSuchKey", "404", "NotFound"):
                 raise InvalidStorageStateError(
                     f"Image metadata exists but blob is missing: {image_uuid}"
                 ) from exc
             raise
-            
-        
+
         return RetrievedImage(
             content=image,
             filename=metadata.filename,
