@@ -15,6 +15,17 @@
                 "asyncio"
             ],
             "jinja": true
+        },
+        {
+            "name": "Python Debugger: Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "tests",
+                "-v"
+            ],
+            "justMyCode": true
         }
     ]
 }

@@ -1,0 +1,9 @@
+DATABASE_URL = postgresql+asyncpg://progimage:progimage@localhost:5432/progimage
+
+S3_ENDPOINT_URL=http://localhost:9000
+S3_ACCESS_KEY=minio
+S3_SECRET_KEY=minio123
+S3_REGION=us-east-1
+S3_BUCKET=images
+
+MAX_IMAGE_SIZE_MB = 10

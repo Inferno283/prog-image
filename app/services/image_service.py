@@ -63,11 +63,10 @@ class ImageService:
                     bucket_name=settings.s3_bucket,
                     key=image_uuid,
                 )
-            except Exception as exc:
+            except Exception:
                 logger.exception(
                     "Failed to clean up orphaned blob %s",
                     image_uuid,
-                    exc_info=exc,
                 )
                 # Orphaned image requires manual deletion to avoid being orphaned.
             raise
@@ -104,7 +103,7 @@ class ImageService:
         except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
             raise InvalidImageError("Invalid image") from exc
 
-    async def retrieve(self, image_uuid: UUID):
+    async def retrieve(self, image_uuid: UUID) -> RetrievedImage:
         metadata = await self.image_metadata_repo.retrieve(image_uuid)
         if metadata is None:
             raise ImageNotFoundError(f"Image not found {image_uuid}")

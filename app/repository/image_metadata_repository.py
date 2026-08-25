@@ -7,7 +7,7 @@ from app.models.image_models import StoredImageMetadata
 from app.schemas.images import ImageMetadata
 
 
-class AsyncImageMetadataRepository():
+class AsyncImageMetadataRepository:
     
     def __init__(self, db: AsyncSession):
         self.db = db

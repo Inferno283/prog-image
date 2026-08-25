@@ -4,7 +4,7 @@ from uuid import UUID
 from app.schemas.images import ImageMetadata
 
 
-class AsyncBlobRepository():
+class AsyncBlobRepository:
     def __init__(self, async_client_factory: Callable, storage_provider: str):
         self.async_client_factory = async_client_factory
         self.storage_provider = storage_provider
