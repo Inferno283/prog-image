@@ -6,7 +6,7 @@ from app.schemas.images import ImageMetadata
 
 
 class AsyncBlobRepository(Repository):
-    def __init__(self, async_client_factory: Callable, storage_provider):
+    def __init__(self, async_client_factory: Callable, storage_provider: str):
         self.async_client_factory = async_client_factory
         self.storage_provider = storage_provider
         
@@ -31,3 +31,10 @@ class AsyncBlobRepository(Repository):
             )
             async with response["Body"] as body:
                 return await body.read()
+
+    async def delete(self, bucket_name: str, key: UUID) -> None:
+        async with self.async_client_factory() as client:
+            await client.delete_object(
+                Bucket=bucket_name,
+                Key=str(key),
+            )

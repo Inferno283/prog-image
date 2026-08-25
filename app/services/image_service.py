@@ -42,13 +42,19 @@ class ImageService:
             image_metadata=image_metadata,
             key=image_uuid,
         )
-
-        await self.image_metadata_repo.store(
-            blob_storage_provider=self.blob_repo.storage_provider,
-            blob_key=image_uuid,
-            image_metadata=image_metadata,
-        )
-
+        try:
+            # IF THIS FAILS, DELETE BLOB FILE TO ENSURE CONSISTENCY
+            await self.image_metadata_repo.store(
+                blob_storage_provider=self.blob_repo.storage_provider,
+                blob_key=image_uuid,
+                image_metadata=image_metadata,
+            )
+        except Exception:
+            await self.blob_repo.delete(
+                bucket_name=settings.s3_bucket,
+                key=image_uuid,
+            )
+            raise
         return image_uuid
 
     async def retrieve(self, image_uuid: UUID):
