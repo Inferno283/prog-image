@@ -1,21 +1,35 @@
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Response, UploadFile
+from fastapi import APIRouter, Depends, Response, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.repository.blob_repository import AsyncBlobRepository
+from app.repository.image_metadata_repository import AsyncImageMetadataRepository
 from app.schemas.images import StoreImageResponse
 from app.services.image_service import ImageService
+from app.storage_connections.db_connection import get_db
+from app.storage_connections.s3_connection import async_client_factory
 
 router = APIRouter(prefix="/images", tags=["images"])
-image_service = ImageService()
+
 
 @router.post("", response_model=StoreImageResponse)
-async def store_image(image: UploadFile) -> StoreImageResponse:
+async def store_image(image: UploadFile, db: Annotated[AsyncSession, Depends(get_db)]) -> StoreImageResponse:
+    image_service = ImageService(
+        image_metadata_repo=AsyncImageMetadataRepository(db),
+        blob_repo=AsyncBlobRepository(async_client_factory, "s3"),
+    )
     image_uuid = await image_service.store(image)
     return StoreImageResponse(id=image_uuid)
 
 
 @router.get("/{image_id}")
-async def retrieve_image(image_id: UUID) -> Response:
+async def retrieve_image(image_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]) -> Response:
+    image_service = ImageService(
+        image_metadata_repo=AsyncImageMetadataRepository(db),
+        blob_repo=AsyncBlobRepository(async_client_factory, "s3"),
+    )
     image = await image_service.retrieve(image_id)
     return Response(
         content=image.content,

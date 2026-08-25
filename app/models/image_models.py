@@ -4,7 +4,7 @@ from sqlalchemy import BigInteger, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.database.connection import Base
+from app.storage_connections.db_connection import Base
 
 
 class StoredImageMetadata(Base):

@@ -10,7 +10,9 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "app.main:app"
+                "app.main:app",
+                "--loop",
+                "asyncio"
             ],
             "jinja": true
         }
