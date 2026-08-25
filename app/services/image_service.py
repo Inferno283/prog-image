@@ -2,16 +2,12 @@ import uuid
 from io import BytesIO
 from uuid import UUID
 
+from botocore.exceptions import ClientError
 from fastapi import UploadFile
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from app.core.config import settings
-from app.repository.blob_repository import AsyncBlobRepository
-from app.repository.image_metadata_repository import AsyncImageMetadataRepository
 from app.schemas.images import ImageMetadata, RetrievedImage
-from app.storage_connections.db_connection import get_db
-from app.storage_connections.s3_connection import async_client_factory
-
 
 MAX_IMAGE_SIZE_IN_MB = 10
 
@@ -24,6 +20,13 @@ IMAGE_MIME_TYPES = {
     "BMP": "image/bmp",
     "TIFF": "image/tiff",
 }
+
+
+class InvalidImageError(Exception):
+    pass
+
+class InvalidStorageStateError(Exception):
+    pass
 
 
 class ImageService:
@@ -50,45 +53,65 @@ class ImageService:
                 image_metadata=image_metadata,
             )
         except Exception:
-            await self.blob_repo.delete(
-                bucket_name=settings.s3_bucket,
-                key=image_uuid,
-            )
+            try:
+                await self.blob_repo.delete(
+                    bucket_name=settings.s3_bucket,
+                    key=image_uuid,
+                )
+            except Exception:
+                # Log this loudly: orphaned blob requires reconciliation.
+                raise
             raise
         return image_uuid
 
+    def get_image_metadata(self, image: UploadFile, image_data: bytes) -> ImageMetadata:
+        if not image_data:
+            raise InvalidImageError("Image is empty")
+
+        if len(image_data) > (settings.max_image_size_mb * (1024**2)):
+            raise InvalidImageError(
+                f"Image exceeds maximum size of {settings.max_image_size_mb} MB"
+            )
+
+        try:
+            with Image.open(BytesIO(image_data)) as pil_image:
+                pil_image.load()
+
+                if pil_image.format not in IMAGE_MIME_TYPES:
+                    raise InvalidImageError(
+                        f"Unsupported image format: {pil_image.format}"
+                    )
+                content_type = IMAGE_MIME_TYPES.get(
+                    pil_image.format
+                )  # This is not always clear from the request, e.g. octet-stream
+
+                return ImageMetadata(
+                    filename=image.filename or "",
+                    content_type=content_type or "",
+                    size_bytes=len(image_data),
+                    width=pil_image.width,
+                    height=pil_image.height,
+                    format=pil_image.format or "",
+                )
+        except (UnidentifiedImageError, OSError, Image.DecompressionBombError) as exc:
+            raise InvalidImageError("Invalid image") from exc
+
     async def retrieve(self, image_uuid: UUID):
         metadata = await self.image_metadata_repo.retrieve(image_uuid)
-        image = await self.blob_repo.retrieve(
-            bucket_name=settings.s3_bucket, key=image_uuid
-        )
+        try:    
+            image = await self.blob_repo.retrieve(
+                bucket_name=settings.s3_bucket, key=image_uuid
+            )
+        except ClientError as exc:
+            if exc.response["Error"]["Code"] in ("NoSuchKey", "404", "NotFound"):    
+                raise InvalidStorageStateError(
+                    f"Image metadata exists but blob is missing: {image_uuid}"
+                ) from exc
+            raise
+            
+        
         return RetrievedImage(
             content=image,
             filename=metadata.filename,
             content_type=metadata.content_type,
         )
-
-    def get_image_metadata(self, image: UploadFile, image_data: bytes) -> ImageMetadata:
-        if not image_data:
-            raise ValueError("Image is empty")
-
-        if len(image_data) > (settings.max_image_size_mb * (1024**2)):
-            raise ValueError(
-                f"Image exceeds maximum size of {settings.max_image_size_mb} MB"
-            )
-
-        with Image.open(BytesIO(image_data)) as pil_image:
-            pil_image.load()
-
-            if pil_image.format not in IMAGE_MIME_TYPES:
-                raise ValueError(f"Unsupported image format: {pil_image.format}")
-            content_type = IMAGE_MIME_TYPES.get(pil_image.format)
-
-            return ImageMetadata(
-                filename=image.filename or "",
-                content_type=content_type or "",
-                size_bytes=len(image_data),
-                width=pil_image.width,
-                height=pil_image.height,
-                format=pil_image.format or "",
-            )

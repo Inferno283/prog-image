@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class StoreImageResponse(BaseModel):
-    id: UUID
+    image_uuid: UUID
     
 class ImageMetadata(BaseModel):
     filename: str
