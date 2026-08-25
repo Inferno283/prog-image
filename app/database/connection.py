@@ -1,5 +1,3 @@
-# app/database/connection.py
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
@@ -14,8 +12,6 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
-
-
 
 class Base(DeclarativeBase):
     pass
