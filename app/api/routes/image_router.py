@@ -4,6 +4,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.connections.db_connection import get_db
+from app.connections.s3_connection import async_client_factory
 from app.repository.blob_repository import AsyncBlobRepository
 from app.repository.image_metadata_repository import AsyncImageMetadataRepository
 from app.schemas.images import StoreImageResponse
@@ -11,9 +13,8 @@ from app.services.image_service import (
     ImageNotFoundError,
     ImageService,
     InvalidImageError,
+    InvalidStorageStateError,
 )
-from app.connections.db_connection import get_db
-from app.connections.s3_connection import async_client_factory
 
 router = APIRouter(prefix="/images", tags=["images"])
 
@@ -49,6 +50,11 @@ async def retrieve_image(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(exc),
+        ) from exc
+    except InvalidStorageStateError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Image not stored. Please try again.",
         ) from exc
 
     return Response(

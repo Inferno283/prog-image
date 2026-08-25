@@ -1,11 +1,10 @@
 from collections.abc import Callable
 from uuid import UUID
 
-from app.repository.repository_protocol import Repository
 from app.schemas.images import ImageMetadata
 
 
-class AsyncBlobRepository(Repository):
+class AsyncBlobRepository():
     def __init__(self, async_client_factory: Callable, storage_provider: str):
         self.async_client_factory = async_client_factory
         self.storage_provider = storage_provider

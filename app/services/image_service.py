@@ -11,8 +11,6 @@ from app.core.config import settings
 from app.schemas.images import ImageMetadata, RetrievedImage
 
 logger = logging.getLogger("prog-image")
-MAX_IMAGE_SIZE_IN_MB = 10
-
 
 IMAGE_MIME_TYPES = {
     "JPEG": "image/jpeg",
@@ -72,7 +70,6 @@ class ImageService:
                     exc_info=exc,
                 )
                 # Orphaned image requires manual deletion to avoid being orphaned.
-                raise
             raise
 
     def get_image_metadata(self, image: UploadFile, image_data: bytes) -> ImageMetadata:
@@ -120,6 +117,10 @@ class ImageService:
                 raise InvalidStorageStateError(
                     f"Image metadata exists but blob is missing: {image_uuid}"
                 ) from exc
+            logger.exception(
+                "Failed to retrieve image %s from blob storage",
+                image_uuid,
+            )
             raise
 
         return RetrievedImage(

@@ -4,11 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.image_models import StoredImageMetadata
-from app.repository.repository_protocol import Repository
 from app.schemas.images import ImageMetadata
 
 
-class AsyncImageMetadataRepository(Repository):
+class AsyncImageMetadataRepository():
     
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -29,15 +28,14 @@ class AsyncImageMetadataRepository(Repository):
         try:
             self.db.add(metadata)
             await self.db.commit()
-            await self.db.refresh(metadata)
 
             return metadata.blob_key
 
-        except Exception: # TODO tidy up this unhappy path
+        except Exception:
             await self.db.rollback()
             raise
 
-    async def retrieve(self, image_uuid: UUID) -> StoredImageMetadata:
+    async def retrieve(self, image_uuid: UUID) -> StoredImageMetadata | None:
         
         result = await self.db.execute(
             select(StoredImageMetadata)
@@ -45,11 +43,6 @@ class AsyncImageMetadataRepository(Repository):
         )
 
         metadata = result.scalar_one_or_none()
-
-        if metadata is None:
-            raise ValueError(
-                f"Image metadata not found: {image_uuid}"
-            )
 
         return metadata
         
