@@ -113,10 +113,11 @@ class ImageService:
                 bucket_name=settings.s3_bucket, key=image_uuid
             )
         except ClientError as exc:
-            if exc.response["Error"]["Code"] in ("NoSuchKey", "404", "NotFound"):
+            if exc.response.get("Error", {}).get("Code") in ("NoSuchKey", "404", "NotFound"):
                 raise InvalidStorageStateError(
                     f"Image metadata exists but blob is missing: {image_uuid}"
                 ) from exc
+            
             logger.exception(
                 "Failed to retrieve image %s from blob storage",
                 image_uuid,
