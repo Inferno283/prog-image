@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.connections.db_connection import get_db
+from app.connections.db_connection import get_async_db
 from app.connections.s3_connection import async_client_factory
 from app.repository.blob_repository import AsyncBlobRepository
 from app.repository.image_metadata_repository import AsyncImageMetadataRepository
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/images", tags=["images"])
 
 @router.post("", response_model=StoreImageResponse)
 async def store_image(
-    image: UploadFile, db: Annotated[AsyncSession, Depends(get_db)]
+    image: UploadFile, db: Annotated[AsyncSession, Depends(get_async_db)]
 ) -> StoreImageResponse:
     image_service = ImageService(
         image_metadata_repo=AsyncImageMetadataRepository(db),
@@ -38,7 +38,7 @@ async def store_image(
 
 @router.get("/{image_id}")
 async def retrieve_image(
-    image_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]
+    image_id: UUID, db: Annotated[AsyncSession, Depends(get_async_db)]
 ) -> Response:
     image_service = ImageService(
         image_metadata_repo=AsyncImageMetadataRepository(db),

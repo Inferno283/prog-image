@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import NullPool
 
-from app.connections.db_connection import Base, get_db
+from app.connections.db_connection import Base, get_async_db
 from app.connections.s3_connection import async_s3_session
 from app.core.config import settings
 from app.main import app as fast_api_app
@@ -46,7 +46,7 @@ async def override_get_db() -> AsyncGenerator[AsyncSession]:
 
 
 # Override get_db to use integration-test-friendly sessions
-fast_api_app.dependency_overrides[get_db] = override_get_db
+fast_api_app.dependency_overrides[get_async_db] = override_get_db
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)

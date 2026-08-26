@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
 from app.api.routes.image_router import router as image_router
+from app.connections.db_connection import get_async_db
 from app.services.image_service import (
     ImageNotFoundError,
     InvalidImageError,
@@ -21,6 +22,11 @@ TEST_IMAGE_UUID = UUID("12345678-1234-5678-1234-567812345678")
 def app() -> FastAPI:
     test_app = FastAPI()
     test_app.include_router(image_router)
+
+    async def override_get_db():
+        yield Mock()
+
+    test_app.dependency_overrides[get_async_db] = override_get_db
 
     return test_app
 
@@ -139,10 +145,7 @@ async def test_retrieve_image_success(
     assert response.status_code == 200
     assert response.content == b"test image"
     assert response.headers["content-type"] == "image/png"
-    assert (
-        response.headers["content-disposition"]
-        == 'attachment; filename="test.png"'
-    )
+    assert response.headers["content-disposition"] == 'attachment; filename="test.png"'
 
     image_service.retrieve.assert_awaited_once_with(
         TEST_IMAGE_UUID,
@@ -183,8 +186,7 @@ async def test_retrieve_image_blob_missing(
 ):
     image_service.retrieve = AsyncMock(
         side_effect=InvalidStorageStateError(
-            f"Image metadata exists but blob is missing: "
-            f"{TEST_IMAGE_UUID}",
+            f"Image metadata exists but blob is missing: {TEST_IMAGE_UUID}",
         ),
     )
 

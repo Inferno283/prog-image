@@ -8,6 +8,8 @@ from fastapi import UploadFile
 from PIL import Image, UnidentifiedImageError
 
 from app.core.config import settings
+from app.repository.blob_repository import AsyncBlobRepository
+from app.repository.image_metadata_repository import AsyncImageMetadataRepository
 from app.schemas.images import ImageMetadata, RetrievedImage
 
 logger = logging.getLogger("prog-image")
@@ -35,7 +37,7 @@ class ImageNotFoundError(Exception):
 
 
 class ImageService:
-    def __init__(self, image_metadata_repo, blob_repo):
+    def __init__(self, image_metadata_repo: AsyncImageMetadataRepository, blob_repo: AsyncBlobRepository):
         self.image_metadata_repo = image_metadata_repo
         self.blob_repo = blob_repo
 

@@ -10,7 +10,7 @@ class AsyncBlobRepository:
         self.storage_provider = storage_provider
         
 
-    async def store(self, bucket_name: str, file_to_store: bytes, image_metadata: ImageMetadata, key: UUID):
+    async def store(self, bucket_name: str, file_to_store: bytes, image_metadata: ImageMetadata, key: UUID) -> UUID:
         async with self.async_client_factory() as client:
             await client.put_object(
                 Bucket=bucket_name,
@@ -22,7 +22,7 @@ class AsyncBlobRepository:
         return key
 
  
-    async def retrieve(self, bucket_name, key: UUID) -> bytes:
+    async def retrieve(self, bucket_name: str, key: UUID) -> bytes:
         async with self.async_client_factory() as client:
             response = await client.get_object(
                 Bucket=bucket_name,
