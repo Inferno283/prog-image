@@ -12,7 +12,7 @@ from app.schemas.images import ImageMetadata, RetrievedImage
 
 logger = logging.getLogger("prog-image")
 
-IMAGE_MIME_TYPES = {
+IMAGE_MEDIA_TYPES = {
     "JPEG": "image/jpeg",
     "PNG": "image/png",
     "WEBP": "image/webp",
@@ -84,11 +84,11 @@ class ImageService:
             with Image.open(BytesIO(image_data)) as pil_image:
                 pil_image.load()
 
-                if pil_image.format not in IMAGE_MIME_TYPES:
+                if pil_image.format not in IMAGE_MEDIA_TYPES:
                     raise InvalidImageError(
                         f"Unsupported image format: {pil_image.format}"
                     )
-                content_type = IMAGE_MIME_TYPES.get(
+                content_type = IMAGE_MEDIA_TYPES.get(
                     pil_image.format
                 )  # This is not always clear from the request, e.g. octet-stream
 

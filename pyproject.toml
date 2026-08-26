@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.13.4",
     "pydantic-settings>=2.15.0",
     "pytest>=9.1.1",
+    "pytest-env>=1.7.0",
     "python-multipart>=0.0.32",
     "sqlalchemy>=2.0.52",
     "uvicorn>=0.52.4",
@@ -21,4 +22,14 @@ dependencies = [
 dev = [
     "httpx>=0.28.1",
     "pytest-asyncio>=1.4.0",
+    "types-botocore>=1.0.2",
 ]
+
+[tool.pytest_env]
+DATABASE_URL = "postgresql+asyncpg://progimage:progimage@localhost:5432/progimage"
+S3_ENDPOINT_URL = "http://localhost:9000"
+S3_ACCESS_KEY = "minio"
+S3_SECRET_KEY = "minio123"
+S3_REGION = "us-east-1"
+S3_BUCKET = "prog-image-test"
+MAX_IMAGE_SIZE_MB = "10"

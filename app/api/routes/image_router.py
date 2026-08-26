@@ -54,7 +54,7 @@ async def retrieve_image(
     except InvalidStorageStateError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Image not stored. Please try again.",
+            detail="Unable to retrieve image.",
         ) from exc
 
     return Response(
