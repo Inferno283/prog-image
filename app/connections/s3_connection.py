@@ -8,4 +8,9 @@ async_s3_session = aioboto3.Session(
     region_name=settings.s3_region,
 )
 
-async_client_factory = lambda: async_s3_session.client("s3", endpoint_url=settings.s3_endpoint_url)
+
+def async_client_factory():
+    return async_s3_session.client(
+        "s3",
+        endpoint_url=settings.s3_endpoint_url,
+    )

@@ -1,9 +1,9 @@
+import logging
 from io import BytesIO
 from unittest.mock import AsyncMock, Mock
-from uuid import uuid4
+from uuid import UUID
 
 import pytest
-import logging
 from botocore.exceptions import ClientError
 from fastapi import UploadFile
 from PIL import Image
@@ -155,7 +155,7 @@ async def test_image_retrieve_success(
     blob_repo,
     test_image,
 ):
-    image_uuid = uuid4()
+    image_uuid = UUID("12345678-1234-5678-1234-567812345678")
 
     metadata = Mock()
     metadata.filename = "test.png"
@@ -182,7 +182,7 @@ async def test_image_retrieve_metadata_does_not_exist(
     image_metadata_repo,
     blob_repo,
 ):
-    image_uuid = uuid4()
+    image_uuid = UUID("12345678-1234-5678-1234-567812345678")
 
     image_metadata_repo.retrieve.return_value = None
 
@@ -199,7 +199,7 @@ async def test_image_retrieve_metadata_exists_blob_does_not_exist(
     image_metadata_repo,
     blob_repo,
 ):
-    image_uuid = uuid4()
+    image_uuid = UUID("12345678-1234-5678-1234-567812345678")
 
     metadata = Mock()
     metadata.filename = "test.png"
@@ -233,7 +233,7 @@ async def test_image_retrieve_blob_network_failure(
     image_metadata_repo,
     blob_repo,
 ):
-    image_uuid = uuid4()
+    image_uuid = UUID("12345678-1234-5678-1234-567812345678")
 
     metadata = Mock()
     metadata.filename = "test.png"
