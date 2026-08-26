@@ -8,14 +8,13 @@ You will need:
 - Python 3.14+
 - uv
 - Docker and Docker Compose
-## Install dependencies
 
 Clone the repository and navigate into the project. Install the project dependencies using 
 ```uv sync```
 
 ### Environment Configuration
 
-Create a ```.env``` file in the project root (same folder as this README). Copy ```dev.env``` to it.
+Create a ```.env``` file in the project root (same folder as this README). Copy the contents of ```dev.env``` to it.
 
 ### Running Docker Compose
 
@@ -30,8 +29,10 @@ docker compose down
 
 ### MinIO
 
-MinIO is used as a local blob storage. 
-The application expects a bucket called ```images``` to be present. Create this using the web UI once ```docker-compose up``` has been run: http://localhost:9001
+MinIO is used as a local blob storage.
+The application expects a bucket called ```images``` to be present. Create this using the web UI once Docker Compose has been started: 
+
+MinIO Web UI: http://localhost:9001
 
 The default credentials are:
 ```
@@ -48,6 +49,12 @@ Once the dependencies and Docker services are running, start the FastAPI applica
 The API will be available at: http://localhost:8000
 
 FastAPI's interactive API documentation is available at: http://localhost:8000/docs
+
+There are 2 endpoints.
+- ### POST /images
+    This takes an image file in the request body. Returns an ```image_uuid``` to be used to retrieve the stored image.
+- ### GET /images/{image-uuid}
+    This requires an image_uuid provided by the POST /images endpoint. Returns an image file.
 
 ## Running Tests
 
