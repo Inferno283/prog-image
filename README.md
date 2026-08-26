@@ -9,7 +9,8 @@ You will need:
 - uv
 - Docker and Docker Compose
 
-Clone the repository and navigate into the project. Install the project dependencies using 
+Clone the repository and navigate into the project. Install the project dependencies using:
+
 ```uv sync```
 
 ### Environment Configuration
