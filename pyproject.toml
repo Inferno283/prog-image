@@ -33,3 +33,6 @@ S3_SECRET_KEY = "minio123"
 S3_REGION = "us-east-1"
 S3_BUCKET = "prog-image-test"
 MAX_IMAGE_SIZE_MB = "10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
